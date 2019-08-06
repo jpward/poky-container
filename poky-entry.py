@@ -23,7 +23,7 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--workdir', default='/home/pokyuser',
+parser.add_argument('--workdir', default='/home/developer',
                     help='The active directory once the container is running. '
                          'In the abscence of the "id" argument, the uid and '
                          'gid of the workdir will also be used for the user '
@@ -37,21 +37,27 @@ parser.add_argument("--cmd",default='',
                     help='command to run after setting up container. '
                          'Often used for testing.')
 
+parser.add_argument("--groupadd",default='',
+                    help='Add additional groups using comma separated list of group_name:gid')
+
 args = parser.parse_args()
 
+groups = ""
+if args.groupadd:
+    groups = "--groupadd={}".format(args.groupadd)
 
 idargs = ""
 if args.id:
     uid, gid = args.id.split(":")
     idargs = "--uid={} --gid={}".format(uid, gid)
 
-elif args.workdir == '/home/pokyuser':
+elif args.workdir == '/home/developer':
     # If the workdir wasn't specified pick a default uid and gid since
     # usersetup won't be able to calculate it from the non-existent workdir
     idargs = "--uid=1000 --gid=1000"
 
-cmd = """usersetup.py --username=pokyuser --workdir={wd}
-         {idargs} poky-launch.sh {wd} {cmd}""" \
-             .format(wd=args.workdir, idargs=idargs,cmd=args.cmd)
+cmd = """dumb-init -c -- usersetup.py --username=developer --workdir={wd}
+         {idargs} {groups} poky-launch.sh {wd} {cmd}""" \
+             .format(wd=args.workdir, groups=groups, idargs=idargs, cmd=args.cmd)
 cmd = cmd.split()
 os.execvp(cmd[0], cmd)
