@@ -56,7 +56,7 @@ elif args.workdir == '/home/developer':
     # usersetup won't be able to calculate it from the non-existent workdir
     idargs = "--uid=1000 --gid=1000"
 
-cmd = """dumb-init -c -- usersetup.py --username=developer --workdir={wd}
+cmd = """usersetup.py --username=developer --workdir={wd}
          {idargs} {groups} poky-launch.sh {wd} {cmd}""" \
              .format(wd=args.workdir, groups=groups, idargs=idargs, cmd=args.cmd)
 cmd = cmd.split()
